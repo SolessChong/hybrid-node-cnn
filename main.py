@@ -1,5 +1,7 @@
 import numpy as np
 from sklearn import svm
+from sklearn import cross_validation
+from sklearn import grid_search
 import matplotlib.pyplot as plt
 
 def load_data(train_fn, test_fn):
@@ -41,20 +43,23 @@ def preprocess(data, label, test, lite=False):
 
 	return data, label, test
 
-def split_valid(data, label, fold):
-	split = int(data.shape[0] / fold)
-
-	data_t = data[0:split,]
-	label_t = label[0:split,]
-	data_v = data[split:,]
-	label_v = label[split:,]
-
-	return data_t, label_t, data_v, label_v
-
 def solve(data, label):
 	print "Solving problem..."
-	clf = svm.SVC()
+
+	# Grid search
+	tuned_params = [
+		{
+			'kernel': ['rbf'], 
+			'gamma': [1e-3, 1e-4],
+			'C': [1, 10, 100, 1000]
+		}]
+
+	clf = grid_search.GridSearchCV(
+		svm.SVC(C=1), tuned_params, cv=5
+		)
 	clf.fit(data, label)
+
+	print "Best params are: ", solver.best_params_
 
 	return clf
 
@@ -75,8 +80,9 @@ if __name__ == "__main__":
 	data, label, test = preprocess(data, label, test, LITE)
 
 	# Validation
-	data_t, label_t, data_v, label_v = split_valid(data, label, 5)
+	data_t, data_v, label_t, label_v = \
+		cross_validation.train_test_split(data, label, test_size=0.2)
 	clf = solve(data_t, label_t)
-	rst = evaluate(clf, data_v, label_v)
+	performance = evaluate(clf, data_v, label_v)
 
 	write_data('output.csv', pred)
