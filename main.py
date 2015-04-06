@@ -2,6 +2,7 @@ import numpy as np
 from sklearn import svm
 from sklearn import cross_validation
 from sklearn import grid_search
+from sklearn import decomposition
 import matplotlib.pyplot as plt
 
 def load_data(train_fn, test_fn):
@@ -22,7 +23,7 @@ def write_data(fn, pred):
 		for i in range(len(pred)):
 			writer.writerow([i+1, pred[i]])
 
-def preprocess(data, label, test, lite=False):
+def preprocess(data, label, test, lite=None):
 	print "Preprocessing data..."
 
 	# Scale
@@ -37,29 +38,50 @@ def preprocess(data, label, test, lite=False):
 
 	# Lite set
 	if lite:
-		data = data[1:10000, :]
-		test = test[1:10000, :]
-		label = label[1:10000]
+		data = data[1:lite, :]
+		test = test[1:lite, :]
+		label = label[1:lite]
+
+	# PCA
+	pca = decomposition.PCA(n_components=80)
+	pca.fit(data)
+
+	data = pca.transform(data)
+	test = pca.transform(test)
 
 	return data, label, test
 
-def solve(data, label):
-	print "Solving problem..."
+def search_params(data, label):
+	print "Searching for best params..."
 
 	# Grid search
-	tuned_params = [
-		{
+	""" Iter #1
+	tuned_params = [{
 			'kernel': ['rbf'], 
 			'gamma': [1e-3, 1e-4],
 			'C': [1, 10, 100, 1000]
 		}]
+	"""
+	
+	tuned_params = [{
+		'kernel': ['rbf'],
+		'gamma': [1e-1,1e-2,1e-3],
+		'C': [30, 100, 300]
+	}]
 
 	clf = grid_search.GridSearchCV(
 		svm.SVC(C=1), tuned_params, cv=5
 		)
 	clf.fit(data, label)
 
-	print "Best params are: ", solver.best_params_
+	print "Best params are: ", clf.best_params_
+
+	return clf
+
+def solve(clf, data, label):
+	print "Solving problem..."
+
+	clf.fit(data, label)
 
 	return clf
 
@@ -67,22 +89,27 @@ def evaluate(clf, data, label):
 	print "Evaluating the classifier..."
 
 	pred = clf.predict(data)
-	mse = ((pred - label) ** 2).mean()
+	mse = np.sqrt(((pred - label) ** 2).mean())
 
 	print "MSE is ", mse
 
 	return mse
 
+def vis_img(img):
+	if img.ndim == 2:
+		plt.imshow(img.reshape((28,28)))
+	plt.show()
+
 if __name__ == "__main__":
 	LITE = True
 
-	data, label, test = load_data('data/train.csv', 'data/test.csv')
-	data, label, test = preprocess(data, label, test, LITE)
+	data_o, label_o, test_o = load_data('data/train.csv', 'data/test.csv')
+	data, label, test = preprocess(data_o, label_o, test_o, LITE)
 
 	# Validation
 	data_t, data_v, label_t, label_v = \
 		cross_validation.train_test_split(data, label, test_size=0.2)
-	clf = solve(data_t, label_t)
+	clf = search_params(data_t, label_t)
 	performance = evaluate(clf, data_v, label_v)
 
 	write_data('output.csv', pred)
