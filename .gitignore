@@ -58,3 +58,4 @@ target/
 
 data/
 sftp-config.json
+*.csv

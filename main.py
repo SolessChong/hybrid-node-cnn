@@ -101,7 +101,8 @@ def vis_img(img):
 	plt.show()
 
 if __name__ == "__main__":
-	LITE = True
+	#LITE = 10000
+	LITE = None
 
 	data_o, label_o, test_o = load_data('data/train.csv', 'data/test.csv')
 	data, label, test = preprocess(data_o, label_o, test_o, LITE)
