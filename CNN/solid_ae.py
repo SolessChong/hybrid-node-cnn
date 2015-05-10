@@ -4,7 +4,7 @@ import numpy as np
 from ae import Autoencoder
 import matplotlib.pyplot as plt
 
-def hardAutoencoder():
+class SolidAutoencoder():
 	def __init__(self, nvis, nhid, data):
 		self.nvis = nvis
 		self.nhid = nhid

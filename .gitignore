@@ -59,3 +59,4 @@ target/
 data/
 sftp-config.json
 *.csv
+*.pkl

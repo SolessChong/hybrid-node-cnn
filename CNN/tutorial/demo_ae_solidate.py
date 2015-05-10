@@ -2,6 +2,7 @@ import theano
 import theano.tensor as T
 import pickle
 from ae import Autoencoder
+from solid_ae import SolidAutoencoder
 import matplotlib.pyplot as plt
 
 # Load data
@@ -28,4 +29,10 @@ r = func(d[0])
 
 # Visualize
 plt.imshow(r.reshape((28,28)))
+plt.show()
+
+# Construct solid model
+sae = SolidAutoencoder(784, 200, p)
+rst = sae.reconstruct(d[0])
+plt.imshow(rst.reshape((28,28)))
 plt.show()
