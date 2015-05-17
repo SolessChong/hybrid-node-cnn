@@ -1,11 +1,14 @@
 !obj:pylearn2.train.Train {
+    save_path: '/home/chong/workspace/kaggle/kaggle-mnist/CNN/cnn_train.pkl',
+    save_freq: 1,
     dataset: &train !obj:pylearn2.datasets.dense_design_matrix.DenseDesignMatrix {
         X: !pkl: 'data/mnist_train_X.pkl',
         y: !pkl: 'data/mnist_train_y.pkl',
         y_labels: 10,
     },
-    model: !obj:logreg.LogisticRegression {
+    model: !obj:cnn.CNN {
         nvis: 784,
+        nhid: 200,
         nclasses: 10,
     },
     algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
@@ -24,7 +27,7 @@
                 y_labels: 10,
             },
         },
-        cost: !obj:logreg.LogisticRegressionCost {},
+        cost: !obj:cnn.CNNCost {},
         termination_criterion: !obj:pylearn2.termination_criteria.EpochCounter {
             max_epochs: 1500
         },
